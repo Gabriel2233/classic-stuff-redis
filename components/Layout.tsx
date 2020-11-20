@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 
 export const Layout = ({ children }: { children: ReactNode }) => {
   return (
-    <Flex w="full" h="full" align="center" flexDir="column">
+    <Flex w="full" h="full" align="center" justify="center" flexDir="column">
       {children}
     </Flex>
   );
