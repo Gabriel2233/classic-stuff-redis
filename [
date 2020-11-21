@@ -6,7 +6,6 @@ import {
   Icon,
   Input,
   Skeleton,
-  Spinner,
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
@@ -20,9 +19,7 @@ import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import useSWR, { mutate } from "swr";
-import { FormEvent, useState } from "react";
-import createRouteLoader from "next/dist/client/route-loader";
-import { Footer } from "../components/Footer";
+import { FormEvent } from "react";
 
 export type TodoDataProps = {
   id: string;
@@ -51,14 +48,10 @@ export default function Home() {
     resolver: yupResolver(validationSchema),
   });
 
-  const [creationLoading, setCreationLoading] = useState<boolean>(false);
-
   // Use this function to create a new Todo
   // On the Form: onSubmit={handleSubmit(onCreate)}
 
   const onCreate = async (data: { name: string }) => {
-    setCreationLoading(true);
-
     try {
       const requestOptions: RequestInit = {
         method: "POST",
@@ -66,7 +59,7 @@ export default function Home() {
         body: JSON.stringify({ name: data.name }),
       };
 
-      const res = await fetch("/api/create-todo", requestOptions);
+      const res = await fetch("/api/create-matter", requestOptions);
 
       if (res.ok) {
         toast({
@@ -79,8 +72,6 @@ export default function Home() {
       }
 
       mutate("/api/list");
-
-      setCreationLoading(false);
     } catch (err) {
       toast({
         title: "Error",
@@ -107,7 +98,7 @@ export default function Home() {
       position: "top-right",
       isClosable: true,
       description:
-        "For the sake of the demo, I removed this functionality, but everything works perfectly in the original project.",
+        "For the sake of the Demo, I removed this functionality, but everything works perfectly in the original project.",
     });
   };
 
@@ -119,19 +110,18 @@ export default function Home() {
         w={["80%", null, "50%"]}
         align="center"
         justify="center"
-        my={6}
+        my={8}
         flexDir="column"
       >
         {data
           ? data.map((todo: TodoDataProps) => (
               <TodoElement key={todo.id} todoData={todo} />
             ))
-          : [1, 2, 3].map((fake) => (
+          : [1, 2, 3, 4].map((fake) => (
               <Skeleton
                 p={4}
                 my={4}
                 w="full"
-                h="80px"
                 startColor="gray.500"
                 endColor="gray.200"
                 key={fake}
@@ -168,17 +158,9 @@ export default function Home() {
           _hover={{ bg: "blue.400" }}
           type="submit"
         >
-          {creationLoading ? (
-            <Spinner />
-          ) : (
-            <>
-              <Icon as={BsCheckCircle} mr={2} /> Confirm
-            </>
-          )}
+          <Icon as={BsCheckCircle} mr={2} /> Confirm
         </Button>
       </Flex>
-
-      <Footer />
     </Layout>
   );
 }

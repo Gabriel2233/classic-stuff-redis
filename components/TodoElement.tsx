@@ -1,14 +1,12 @@
-import { Button, Flex, Heading, Icon } from "@chakra-ui/react";
+import { Button, Flex, Heading, Icon, useToast } from "@chakra-ui/react";
 
 import { FiHeart } from "react-icons/fi";
 import { mutate } from "swr";
 import { TodoDataProps } from "../pages";
 
-export const MatterElement = ({
-  matterData,
-}: {
-  matterData: TodoDataProps;
-}) => {
+export const TodoElement = ({ todoData }: { todoData: TodoDataProps }) => {
+  const toast = useToast();
+
   const upvote = async (id: string) => {
     try {
       const requestOptions = {
@@ -19,9 +17,17 @@ export const MatterElement = ({
 
       const res = await fetch("/api/vote", requestOptions);
 
-      const body = await res.json();
+      const data = await res.json();
 
-      console.log(body);
+      toast({
+        title: data.body === "1" ? "Success" : "Error",
+        status: data.body === "1" ? "success" : "error",
+        duration: 3000,
+        position: "top-right",
+        isClosable: true,
+        description:
+          data.body === "1" ? "Successfully upvoted this todo" : data.body,
+      });
 
       mutate("/api/list");
     } catch (err) {
@@ -41,7 +47,7 @@ export const MatterElement = ({
       py={6}
     >
       <Heading size="md" px={4}>
-        {matterData.name}
+        {todoData.name}
       </Heading>
 
       <Button
@@ -49,9 +55,9 @@ export const MatterElement = ({
         color="red.500"
         _hover={{ bg: "red.100" }}
         mx={4}
-        onClick={() => upvote(matterData.id)}
+        onClick={() => upvote(todoData.id)}
       >
-        <Icon as={FiHeart} mr={2} /> {matterData.score}
+        <Icon as={FiHeart} mr={2} /> {todoData.score}
       </Button>
     </Flex>
   );

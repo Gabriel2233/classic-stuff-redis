@@ -2,9 +2,11 @@ import { NextApiRequest, NextApiResponse } from "next";
 import redis, { RedisClient, RedisError } from "redis";
 import { promisify } from "util";
 
+const PORT: number = Number(process.env.LAMBDA_STORE_REDIS_PORT);
+
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   const client: RedisClient = redis.createClient({
-    port: 30216,
+    port: PORT,
     host: process.env.LAMBDA_STORE_REDIS_HOST,
     password: process.env.LAMBDA_STORE_REDIS_PASSWORD,
   });
@@ -16,17 +18,17 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     throw new Error(err.message);
   });
 
-  const mattersSetIds = await zrevrangeAsync("matters", 0, 50, "WITHSCORES");
+  const todosSetIds = await zrevrangeAsync("todos", 0, 50, "WITHSCORES");
   let data = [];
 
-  for (let i = 0; i < mattersSetIds.length - 1; i += 2) {
-    const matterId = mattersSetIds[i];
-    const matterData = await hgetallAsync(matterId);
+  for (let i = 0; i < todosSetIds.length - 1; i += 2) {
+    const todoId = todosSetIds[i];
+    const todoData = await hgetallAsync(todoId);
 
-    matterData["id"] = matterId;
-    matterData["score"] = mattersSetIds[i + 1];
+    todoData["id"] = todoId;
+    todoData["score"] = todosSetIds[i + 1];
 
-    data.push(matterData);
+    data.push(todoData);
   }
 
   client.quit();

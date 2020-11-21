@@ -2,9 +2,11 @@ import { NextApiRequest, NextApiResponse } from "next";
 import redis, { RedisClient, RedisError } from "redis";
 import { promisify } from "util";
 
+const PORT: number = Number(process.env.LAMBDA_STORE_REDIS_PORT);
+
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   const client: RedisClient = redis.createClient({
-    port: 30216,
+    port: PORT,
     host: process.env.LAMBDA_STORE_REDIS_HOST,
     password: process.env.LAMBDA_STORE_REDIS_PASSWORD,
   });
@@ -28,7 +30,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   } else {
     const zincrbyAsync = promisify(client.zincrby).bind(client);
 
-    const upvotedTodo = await zincrbyAsync("matters", 1, id);
+    const upvotedTodo = await zincrbyAsync("todos", 1, id);
 
     client.quit();
 

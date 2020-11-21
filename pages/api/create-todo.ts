@@ -7,9 +7,11 @@ type TBody = {
   name: string;
 };
 
+const PORT: number = Number(process.env.LAMBDA_STORE_REDIS_PORT);
+
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   const client: RedisClient = redis.createClient({
-    port: 30216,
+    port: PORT,
     host: process.env.LAMBDA_STORE_REDIS_HOST,
     password: process.env.LAMBDA_STORE_REDIS_PASSWORD,
   });
@@ -26,14 +28,14 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   const name = body["name"];
 
   if (name) {
-    await zaddAsync("matters", 0, id);
+    await zaddAsync("todos", 0, id);
     const matterData = await hsetAsync(`${id}`, "name", name);
     client.quit();
     res.status(200).json(matterData);
   } else {
     client.quit();
     res.json({
-      message: "An unexpected Error ocurred. PLease try again.",
+      message: "An unexpected Error ocurred. Please try again.",
     });
   }
 };
