@@ -147,7 +147,9 @@ export default function Home() {
         as="form"
         onSubmit={notAvailableMessage}
       >
-        <FormControl isInvalid={errors && errors.name && errors.name.message}>
+        <FormControl
+          isInvalid={errors && errors.name && errors.name.message && true}
+        >
           <Input
             placeholder="Add a new Todo"
             p={6}
