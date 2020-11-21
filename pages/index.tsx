@@ -18,7 +18,11 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import useSWR, { mutate } from "swr";
 import { MatterElement } from "../components/MatterElement";
 
-import produce from "immer";
+export type TodoDataProps = {
+  id: string;
+  name: string;
+  score: string;
+};
 
 type FormValues = {
   name: string;
@@ -51,23 +55,17 @@ export default function Home() {
 
       const res = await fetch("/api/create-matter", requestOptions);
 
-      const resData = await res.json();
+      if (res.ok) {
+        toast({
+          title: "Success!",
+          status: "success",
+          duration: 3000,
+          position: "top-right",
+          description: "Your matter was created!",
+        });
+      }
 
-      toast({
-        title: "Success!",
-        status: "success",
-        duration: 3000,
-        position: "top-right",
-        description: "Your matter was created!",
-      });
-
-      mutate(
-        "/api/list",
-        produce((mattersData) => {
-          [...mattersData, resData];
-        }),
-        false
-      );
+      mutate("/api/list");
     } catch (err) {
       toast({
         title: "Error",
@@ -91,8 +89,8 @@ export default function Home() {
       <Header>{}</Header>
 
       <Flex w="50%" align="center" justify="center" my={8} flexDir="column">
-        {data.map((matter) => (
-          <MatterElement key={matter.name} />
+        {data.map((matter: TodoDataProps) => (
+          <MatterElement key={matter.id} matterData={matter} />
         ))}
       </Flex>
 

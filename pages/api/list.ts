@@ -23,6 +23,9 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     const matterId = mattersSetIds[i];
     const matterData = await hgetallAsync(matterId);
 
+    matterData["id"] = matterId;
+    matterData["score"] = mattersSetIds[i + 1];
+
     data.push(matterData);
   }
 

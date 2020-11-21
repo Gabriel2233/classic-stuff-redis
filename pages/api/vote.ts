@@ -1,11 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import redis, { RedisClient, RedisError } from "redis";
 import { promisify } from "util";
-import { v4 as uuidv4 } from "uuid";
-
-type TBody = {
-  name: string;
-};
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   const client: RedisClient = redis.createClient({
@@ -14,26 +9,29 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     password: process.env.LAMBDA_STORE_REDIS_PASSWORD,
   });
 
-  const hsetAsync = promisify(client.hset).bind(client);
-  const zaddAsync = promisify(client.zadd).bind(client);
-
   client.on("error", (err: RedisError) => {
     throw new Error(err.message);
   });
 
-  const id = uuidv4();
-  const body: TBody = req.body;
-  const name = body["name"];
+  const body: { id: string } = req.body;
+  const id = body["id"];
+  const userIp = req.headers["x-forwarded-for"];
 
-  if (name) {
-    await zaddAsync("matters", 0, id);
-    const matterData = await hsetAsync(`${id}`, "name", name);
+  const saadAsync = promisify(client.sadd).bind(client);
+
+  const voteRegister = await saadAsync(`v:${id}`, userIp ? userIp : "-");
+
+  if (voteRegister === 0) {
     client.quit();
-    res.status(200).json(matterData);
+
+    res.json({ body: "You cannot vote twice on a same todo" });
   } else {
+    const zincrbyAsync = promisify(client.zincrby).bind(client);
+
+    const upvotedTodo = await zincrbyAsync("matters", 1, id);
+
     client.quit();
-    res.json({
-      message: "An unexpected Error ocurred. PLease try again.",
-    });
+
+    res.json({ body: upvotedTodo });
   }
 };
